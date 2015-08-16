@@ -1,0 +1,173 @@
+package it.jaschke.alexandria;
+
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import it.jaschke.alexandria.data.AlexandriaContract;
+import it.jaschke.alexandria.services.BookService;
+import it.jaschke.alexandria.services.DownloadImage;
+
+
+public class BookDetail extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String LOG_TAG = "BookDetail";
+
+    public static final String EAN_KEY = "EAN";
+    private final int LOADER_ID = 10;
+    private View rootView;
+    private String ean;
+    private String bookTitle;
+    private ShareActionProvider shareActionProvider;
+
+    public BookDetail(){
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Log.d(LOG_TAG, "onCreate");
+        setHasOptionsMenu(true);
+    }
+
+
+    @Override
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "onCreateView");
+
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            ean = arguments.getString(BookDetail.EAN_KEY);
+            getLoaderManager().restartLoader(LOADER_ID, null, this);
+        }
+
+        rootView = inflater.inflate(R.layout.fragment_full_book, container, false);
+        rootView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent bookIntent = new Intent(getActivity(), BookService.class);
+                bookIntent.putExtra(BookService.EAN, ean);
+                bookIntent.setAction(BookService.DELETE_BOOK);
+                getActivity().startService(bookIntent);
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
+        return rootView;
+    }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(LOG_TAG, "onCreateOptionsMenu");
+        inflater.inflate(R.menu.book_detail, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        if ((bookTitle != null) && (bookTitle.length() > 0)) {
+            updateShare();
+        }
+    }
+
+    @Override
+    public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+                getActivity(),
+                AlexandriaContract.BookEntry.buildFullBookUri(Long.parseLong(ean)),
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
+        Log.d(LOG_TAG, "onLoadFinished");
+
+        if (!data.moveToFirst()) {
+            return;
+        }
+
+        bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        ((TextView) rootView.findViewById(R.id.fullBookTitle)).setText(bookTitle);
+
+        updateShare();
+
+        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        if (bookSubTitle != null) {    // kmm adding null checks
+            ((TextView) rootView.findViewById(R.id.fullBookSubTitle)).setText(bookSubTitle);
+        }
+
+        String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
+        if (desc != null) {    // kmm adding null checks
+            ((TextView) rootView.findViewById(R.id.fullBookDesc)).setText(desc);
+        }
+
+        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        if (authors != null) {    // kmm adding null checks
+            String[] authorsArr = authors.split(",");
+            ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
+            ((TextView) rootView.findViewById(R.id.authors)).setText(authors.replace(",","\n"));
+        }
+
+        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+        if((imgUrl != null) && Patterns.WEB_URL.matcher(imgUrl).matches()){    // kmm adding null checks
+            new DownloadImage((ImageView) rootView.findViewById(R.id.fullBookCover)).execute(imgUrl);
+            rootView.findViewById(R.id.fullBookCover).setVisibility(View.VISIBLE);
+        }
+
+        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        if (categories != null) {
+            ((TextView) rootView.findViewById(R.id.categories)).setText(categories);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
+        Log.d(LOG_TAG, "onLoaderReset");
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onDestroyView();
+        Log.d(LOG_TAG, "onPause");
+
+        if(MainActivity.IS_TABLET && rootView.findViewById(R.id.right_container)==null){
+            getActivity().getSupportFragmentManager().popBackStack();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(LOG_TAG, "onResume");
+        setMenuVisibility(true);
+
+        super.onResume();
+    }
+
+    private void updateShare() {
+        if (shareActionProvider != null) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text)+bookTitle);
+            shareActionProvider.setShareIntent(shareIntent);
+        }
+    }
+}
