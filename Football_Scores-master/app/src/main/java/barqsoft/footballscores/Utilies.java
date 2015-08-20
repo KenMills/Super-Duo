@@ -10,6 +10,7 @@ public class Utilies
     public static final int CHAMPIONS_LEAGUE = 362;
     public static final int PRIMERA_DIVISION = 358;
     public static final int BUNDESLIGA = 351;
+    public static final String TAG_SLASH = " - ";
 
     public static String getLeague(int league_num)
     {
@@ -59,12 +60,11 @@ public class Utilies
     {
         if(home_goals < 0 || awaygoals < 0)
         {
-            return App.getContext().getString(R.string.util_minus);
+            return TAG_SLASH;
         }
         else
         {
-            return String.valueOf(home_goals) + App.getContext().getString(R.string.util_minus) + String.valueOf(awaygoals);
-//            return String.valueOf(home_goals) + " - " + String.valueOf(awaygoals);
+            return String.valueOf(home_goals) + TAG_SLASH + String.valueOf(awaygoals);
         }
     }
 
