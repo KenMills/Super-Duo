@@ -123,11 +123,6 @@ public class ScoresProvider extends ContentProvider
             default: throw new UnsupportedOperationException("Unknown Uri" + uri);
         }
 
-//kmm
-//        Context context = getContext();
-//        ContentResolver cr = context.getContentResolver();
-//        retCursor.setNotificationUri(cr,uri);
-//kmm
         retCursor.setNotificationUri(getContext().getContentResolver(),uri);
         return retCursor;
     }

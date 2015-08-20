@@ -55,4 +55,31 @@
     <string name="about_football_scores">About Football Scores</string>
     <string name="match_details">Match Details</string>
     <string name="list_of_matches">List of matches for the day</string>
+    <string name="match_day_group_stage">Group Stages, Matchday : 6</string>
+    <string name="match_day_first_knockout">First Knockout round</string>
+    <string name="match_day_quarterfinal">QuarterFinal</string>
+    <string name="match_day_semifinal">SemiFinal</string>
+
+    <string name="league_seria_a" translatable="false">Seria A</string>
+    <string name="league_premier" translatable="false">Premier League</string>
+    <string name="league_uefa" translatable="false">UEFA Champions League</string>
+    <string name="league_primera" translatable="false">Primera Division</string>
+    <string name="league_bundelinga" translatable="false">Bundesliga</string>
+    <string name="league_not_known" translatable="false">Not known League Please report</string>
+
+    <string name="match_day_final">Final</string>
+    <string name="match_day_matchday">Matchday : </string>
+
+    <string name="team_arsenal" translatable="false">Arsenal London FC</string>
+    <string name="team_manchester_united" translatable="false">Manchester United FC</string>
+    <string name="team_swansea" translatable="false">Swansea City</string>
+    <string name="team_leichester" translatable="false">Leicester City</string>
+    <string name="team_everton" translatable="false">Everton FC</string>
+    <string name="team_west_ham" translatable="false">West Ham United FC</string>
+    <string name="team_tottenham" translatable="false">Tottenham Hotspur FC</string>
+    <string name="team_west_bromwich" translatable="false">West Bromwich Albion</string>
+    <string name="team_sunderland" translatable="false">Sunderland FC</string>
+    <string name="team_stoke_city" translatable="false">Stoke City FC</string>
+
+    <string name="util_minus" translatable="false"> - </string>
 </resources>
